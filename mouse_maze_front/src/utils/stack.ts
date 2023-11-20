@@ -1,9 +1,15 @@
 export class Step {
-    value: number | null;
+    value: number | string;
+    x: number;
+    y: number;
+    checked: boolean;
     next: Step | null;
 
-    constructor() {
-        this.value = null;
+    constructor(value: number, x: number, y: number, checked: boolean) {
+        this.value = value;
+        this.checked = checked
+        this.x = x;
+        this.y = y;
         this.next = null;
     }
 }
@@ -20,25 +26,27 @@ export class Stack {
         this.count = 0;
     }
 
-    push(value: number): void {
-   
-            const new_node = new Step();
-            new_node.value = value;
-            new_node.next = this.start;
-            this.start = new_node;
-            this.count++;
-  
+    push(step: Step): void {
+        step.next = this.start;
+
+      
+        this.start = step;
+        console.log(this.start)
+        this.count++;
+
     }
 
-    verTopo(): void {
-        console.log("o valor do topo é:", this.start ? this.start.value : null);
+    verTopo(): Step | null {
+        console.log(this.start)
+
+        return this.start
     }
 
     isEmpty(): boolean {
         return this.count === 0;
     }
 
-   
+
 
     pop(): void {
         if (!this.isEmpty()) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Stack } from "../../utils/stack";
+import { Stack, Step } from "../../utils/stack";
 interface mouseMazeType {
   value: number | string;
   x: number;
@@ -12,9 +12,9 @@ export default function MainContainer() {
   const [blockSize, setBlocKSize] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [endPosition, setEndPosition] = useState({ x: 0, y: 0 });
-  const [mouse_maze, setMouse_maze] = useState<mouseMazeType[]>([]);
+  const [mouse_maze, setMouse_maze] = useState<Step[]>([]);
   const [matriz, setMatriz] = useState<Array<any[]>>([]);
-  const pilha = new Stack();
+  const [stack, setStack] = useState(new Stack())
 
   useEffect(() => {
     if (matriz.length > 0) {
@@ -25,7 +25,6 @@ export default function MainContainer() {
       const size = (wBlock + hBlock) / 2;
 
       const porcent = size * 0.45;
-      console.log(porcent);
       setBlocKSize(porcent);
 
       //Gerar a nova array
@@ -34,11 +33,19 @@ export default function MainContainer() {
   }, [matriz]);
 
   useEffect(() => {
-    if (mouse_maze.length > 0) {
-      if (mousePosition != endPosition) {
-        let new_mouse_maze = [...mouse_maze];
 
-        setTimeout(() => {
+    if (mouse_maze.length > 0) {
+
+      let new_mouse_maze = [...mouse_maze];
+
+      setTimeout(() => {
+        console.log(mousePosition.x, endPosition.x)
+        console.log(mousePosition.y, endPosition.y)
+        if (mousePosition.x == endPosition.x && mousePosition.y == endPosition.y) {
+          alert("Terminou");
+          reset()
+        } else {
+
           const array: number[] = [
             getIndex(mousePosition.x + 1, mousePosition.y),
             getIndex(mousePosition.x - 1, mousePosition.y),
@@ -46,26 +53,34 @@ export default function MainContainer() {
             getIndex(mousePosition.x, mousePosition.y + 1),
           ];
 
-          array.every((i) => {
+          const verify = array.every((i) => {
             if (
               new_mouse_maze[i] &&
               new_mouse_maze[i].value != 1 &&
               !new_mouse_maze[i].checked
             ) {
-              console.log("pode ir:" + i);
-              new_mouse_maze[i] = { ...new_mouse_maze[i], checked: true };
+
+              new_mouse_maze[i].checked = true
               setMouse_maze(new_mouse_maze);
               setMousePosition(new_mouse_maze[i]);
-
+              stack.push(new_mouse_maze[i])
               return false;
             }
 
             return true;
           });
-        }, 1000);
-      } else {
-        alert("Terminou");
-      }
+
+          if (verify) {
+            stack.pop()
+            const topo = stack.verTopo()
+            if (topo?.x && topo.y)
+              setMousePosition({ x: topo?.x, y: topo?.y })
+
+          }
+        }
+
+      }, 1000);
+
     }
   }, [mousePosition, matriz]);
 
@@ -74,14 +89,14 @@ export default function MainContainer() {
   }
 
   function generateMaze() {
-    const array: mouseMazeType[] = [];
+    const array: Step[] = [];
 
     matriz.map((row, y) => {
       row.map((value, x) => {
         if (value == "m") setMousePosition({ x: x, y: y });
         if (value == "e") setEndPosition({ x: x, y: y });
-
-        array.push({ value: value, x: x, y: y, checked: false });
+        const new_step = new Step(value, x, y, false)
+        array.push(new_step);
       });
     });
 
@@ -152,10 +167,18 @@ export default function MainContainer() {
     reader.readAsText(e.target.files[0]);
   }
 
+
+  function reset(){
+    setStack(new Stack())
+    setMatriz([[]])
+    setMousePosition({x:0, y:0})
+    setEndPosition({x:0, y:0})
+    setMouse_maze([])
+  }
+
   return (
     <Main>
       <input type="file" onChange={handleFile} />
-      <button onClick={() => setMousePosition(endPosition)}>resolver</button>
       <MapContainer>
         {mouse_maze.map((e, index) => SelectedType(e.value, e.x, e.y, index))}
       </MapContainer>
