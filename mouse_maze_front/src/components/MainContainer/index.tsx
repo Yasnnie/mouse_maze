@@ -73,6 +73,9 @@ export default function MainContainer() {
           });
 
           if (verify) {
+            const indexAtual = getIndex(mousePosition.x, mousePosition.y)
+            new_mouse_maze[indexAtual].noWayOut = true
+            setMouse_maze(new_mouse_maze);
             stack.pop()
             const topo = stack.verTopo()
             if (topo?.x && topo.y)
@@ -81,7 +84,7 @@ export default function MainContainer() {
           }
         }
 
-      }, 1000);
+      }, 200);
 
     }
   }, [mousePosition, matriz]);
@@ -97,7 +100,7 @@ export default function MainContainer() {
       row.map((value, x) => {
         if (value == "m") setMousePosition({ x: x, y: y });
         if (value == "e") setEndPosition({ x: x, y: y });
-        const new_step = new Step(value, x, y, false)
+        const new_step = new Step(value, x, y)
         array.push(new_step);
       });
     });
@@ -106,7 +109,7 @@ export default function MainContainer() {
   }
 
   //Renderizar se é parede, rato ou espaço em branco
-  function SelectedType(value: any, x: number, y: number, index: number, checked:boolean) {
+  function SelectedType(value: any, x: number, y: number, index: number, checked: boolean, noWayOut:boolean) {
     if (value == "m") {
       return (
         <SemFundo
@@ -115,13 +118,13 @@ export default function MainContainer() {
           y={mousePosition.y}
           size={blockSize}
         >
-          <img src={MouseImg} alt="rato"/>
+          <img src={MouseImg} alt="rato" />
         </SemFundo>
       );
     }
 
     if (value == 0) {
-      return <Caminho x={x} key={index} y={y} size={blockSize} check={checked}/>;
+      return <Caminho x={x} key={index} y={y} size={blockSize} check={checked} noWayOut={noWayOut}/>;
     }
 
     if (value == "e") {
@@ -151,7 +154,7 @@ export default function MainContainer() {
       let data = event.target.result;
       const new_data = data.split("\n");
 
-      const [array_x, array_y] = transformNumber(new_data[0].split(" "));
+      const [array_y, array_x] = transformNumber(new_data[0].split(" "));
       new_data.shift();
 
       const new_matriz = [];
@@ -186,7 +189,7 @@ export default function MainContainer() {
     <Main>
       <input type="file" onChange={handleFile} />
       <MapContainer>
-        {mouse_maze.map((e, index) => SelectedType(e.value, e.x, e.y, index, e.checked))}
+        {mouse_maze.map((e, index) => SelectedType(e.value, e.x, e.y, index, e.checked, e.noWayOut))}
       </MapContainer>
     </Main>
   );
@@ -227,13 +230,14 @@ const Caminho = styled.div<{
   x: number;
   y: number;
   check?: boolean;
+  noWayOut?: boolean;
 }>`
   position: absolute;
   width: ${({ size }) => size + "px"};
   height: ${({ size }) => size + "px"};
   top: ${({ size, y }) => size * y + "px"};
   left: ${({ size, x }) => size * x + "px"};
-  background: ${({ check }) => (check ? "green" : "transparent")};
+  background: ${({ check, noWayOut }) => (noWayOut ? "red" : check ? "green" : "transparent")};
 `;
 
 const SemFundo = styled(Wall)`

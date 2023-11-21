@@ -3,13 +3,15 @@ export class Step {
     x: number;
     y: number;
     checked: boolean;
+    noWayOut: boolean;
     next: Step | null;
 
-    constructor(value: number, x: number, y: number, checked: boolean) {
+    constructor(value: number, x: number, y: number) {
         this.value = value;
-        this.checked = checked
+        this.checked = false
         this.x = x;
         this.y = y;
+        this.noWayOut = false;
         this.next = null;
     }
 }
@@ -29,7 +31,7 @@ export class Stack {
     push(step: Step): void {
         step.next = this.start;
 
-      
+
         this.start = step;
         console.log(this.start)
         this.count++;
@@ -49,9 +51,9 @@ export class Stack {
 
 
     pop(): void {
-        if (!this.isEmpty()) {
-            console.log("saindo");
-            const new_start = this.start?.next || null;
+        if (!this.isEmpty() && this.start) {
+            this.start.noWayOut = true
+            const new_start = this.start.next || null;
             this.start = new_start;
             this.count--;
         }
