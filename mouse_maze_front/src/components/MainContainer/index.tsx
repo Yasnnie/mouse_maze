@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Stack, Step } from "../../utils/stack";
+import MouseImg from "../../assets/mouse.webp"
+import CheeseImg from "../../assets/queijo.webp"
 interface mouseMazeType {
   value: number | string;
   x: number;
@@ -104,24 +106,28 @@ export default function MainContainer() {
   }
 
   //Renderizar se é parede, rato ou espaço em branco
-  function SelectedType(value: any, x: number, y: number, index: number) {
+  function SelectedType(value: any, x: number, y: number, index: number, checked:boolean) {
     if (value == "m") {
       return (
-        <Mouse
+        <SemFundo
           key={index}
           x={mousePosition.x}
           y={mousePosition.y}
           size={blockSize}
-        />
+        >
+          <img src={MouseImg} alt="rato"/>
+        </SemFundo>
       );
     }
 
     if (value == 0) {
-      return <Caminho x={x} key={index} y={y} size={blockSize} />;
+      return <Caminho x={x} key={index} y={y} size={blockSize} check={checked}/>;
     }
 
     if (value == "e") {
-      return <End x={x} y={y} size={blockSize} key={index} />;
+      return <SemFundo x={x} y={y} size={blockSize} key={index}>
+        <img src={CheeseImg} alt="queijo" />
+      </SemFundo>;
     }
 
     return <Wall x={x} y={y} size={blockSize} key={index} />;
@@ -168,11 +174,11 @@ export default function MainContainer() {
   }
 
 
-  function reset(){
+  function reset() {
     setStack(new Stack())
     setMatriz([[]])
-    setMousePosition({x:0, y:0})
-    setEndPosition({x:0, y:0})
+    setMousePosition({ x: 0, y: 0 })
+    setEndPosition({ x: 0, y: 0 })
     setMouse_maze([])
   }
 
@@ -180,7 +186,7 @@ export default function MainContainer() {
     <Main>
       <input type="file" onChange={handleFile} />
       <MapContainer>
-        {mouse_maze.map((e, index) => SelectedType(e.value, e.x, e.y, index))}
+        {mouse_maze.map((e, index) => SelectedType(e.value, e.x, e.y, index, e.checked))}
       </MapContainer>
     </Main>
   );
@@ -220,7 +226,7 @@ const Caminho = styled.div<{
   size: number;
   x: number;
   y: number;
-  check?: number;
+  check?: boolean;
 }>`
   position: absolute;
   width: ${({ size }) => size + "px"};
@@ -230,11 +236,13 @@ const Caminho = styled.div<{
   background: ${({ check }) => (check ? "green" : "transparent")};
 `;
 
-const Mouse = styled(Wall)`
-  background: red;
+const SemFundo = styled(Wall)`
+  background: transparent;
   z-index: 3;
+
+  img{
+    width:100%;
+    height: 100%;
+  }
 `;
 
-const End = styled(Wall)`
-  background: Blue;
-`;
